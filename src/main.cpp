@@ -1,7 +1,8 @@
-#include "include/glad/glad.h"
+#include "../include/glad/glad.h"
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
+#include <fstream>
 //Globals
 
 int gScreenHeight = 480;
@@ -15,21 +16,25 @@ bool gQuit = false;
 GLuint gVAO = 0;
 GLuint gVBO = 0;
 
-const std::string gVertexShaderSource =
-    "#version 410 core\n"
-    "in vec4 position;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = vec4(position.x, position.y, position.z, position.w);\n"
-    "}\0";
-const std::string gFragmentShaderSource = 
-    "#version 410 core\n"
-    "out vec4 color;\n"
-    "void main()\n"
-    "{\n"
-    "   color = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-    "}\n\0";
 
+
+std::string LoadShaderAsString(const std::string& filename)
+{
+    std::string res = "";
+
+    std::string line = "";
+    std::ifstream myFile(filename.c_str());
+
+    if(myFile.is_open())
+    {
+        while(std::getline(myFile, line))
+        {
+            res+=line + '\n';
+        }
+        myFile.close();
+    }
+    return res;
+}
 
 
 // program object for our shaders
@@ -37,7 +42,6 @@ const std::string gFragmentShaderSource =
 // to define how our vertices and triangles are used
 
 GLuint gGraphicsPipelineShaderProgram = 0;
-
 
 GLuint CompileShader(GLuint type, const std::string &sourceCode)
 {
@@ -64,11 +68,13 @@ GLuint CreateShaderProgram(const std::string &vs, const std::string &fs)
     GLuint myVertexShader = CompileShader(GL_VERTEX_SHADER, vs);
     GLuint myFragmentShader = CompileShader(GL_FRAGMENT_SHADER, fs);
 
+    // linking our two shader programs(vertex and fragment) into one executable
+    // file, for our graphicsPipelne
     glAttachShader(programObject, myVertexShader);
     glAttachShader(programObject, myFragmentShader);
     glLinkProgram(programObject);
 
-    // validate our program
+    // validate our progam
     glValidateProgram(programObject);
     //detach shader
 
@@ -76,7 +82,11 @@ GLuint CreateShaderProgram(const std::string &vs, const std::string &fs)
 }
 void CreateGraphicsPipeline()
 {
-    gGraphicsPipelineShaderProgram = CreateShaderProgram(gVertexShaderSource, gFragmentShaderSource);
+    std::string vertexShaderSrc     = LoadShaderAsString("shaders/vert.glsl");
+    std::string fragmentShaderSrc   = LoadShaderAsString("shaders/frag.glsl");
+
+
+    gGraphicsPipelineShaderProgram = CreateShaderProgram(vertexShaderSrc, fragmentShaderSrc);
 }
 void GetOpenGLVersionInfo()
 {
@@ -123,11 +133,14 @@ void VertexSpecification()
     // the size of our vertex multiplied by the size of each element
     // takes in the data
     // and the usage
+// CONCLUSION WITH glBUUfferData: we end up with our CPU vertex data being stored on the GPU
     glBufferData(GL_ARRAY_BUFFER,
             vertexPos.size() * sizeof(GLfloat),
             vertexPos.data(), 
             GL_STATIC_DRAW);
 
+    // basically just defining how much data we point to and which attributes we look at when we
+    // jump from vertex to vertex
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0,
                         3,
@@ -182,6 +195,7 @@ void InitializeProgram()
     // initialize glad lib
     // the glad loader is a function pointer that points to
     // openGL functions at runtime
+    // so yeah it gives us all the openGL function!
     if(!gladLoadGLLoader(SDL_GL_GetProcAddress))
     {
         std::cout << "Glad was not initiliazed"  << std::endl;
@@ -252,12 +266,17 @@ void CleanUp()
 int main()
 {
    
+    // set up graphics program
     InitializeProgram();
     
+    // setup the geometry
     VertexSpecification();
 
+    // crrate the graphics pipelines
+    // MINIMUM: setting vertex and fragment shaders
     CreateGraphicsPipeline();
 
+    // drawing;
     MainLoop();
 
     CleanUp();
