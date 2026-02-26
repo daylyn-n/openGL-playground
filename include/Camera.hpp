@@ -3,6 +3,9 @@
 
 #include "../thirdparty/glm-master/glm/glm.hpp"
 #include "../thirdparty/glm-master/glm/gtc/matrix_transform.hpp"
+#define GLM_ENABLE_EXPERIMENTAL
+#include "../thirdparty/glm-master/glm/gtx/rotate_vector.hpp"
+
 class Camera
 {
     public:
@@ -30,7 +33,7 @@ class Camera
         glm::vec3 Eye_;
         glm::vec3 ViewDirection_;
         glm::vec3 UpVector_;
-        
+        glm::vec2 oldMousePos_;        
         
 
 };

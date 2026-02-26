@@ -2,29 +2,40 @@
 
 glm::mat4 Camera::GetViewMatrix() const
 {
-    return glm::lookAt(Eye_, ViewDirection_, UpVector_);
+    return glm::lookAt(Eye_, Eye_ + ViewDirection_, UpVector_);
 }
 void Camera::MouseLook(int mouseX, int mouseY)
 {
+    static bool firstLook = true;
+    glm::vec2 currentMouse = glm::vec2(mouseX, mouseY);
+    if(firstLook)
+    {
+        oldMousePos_ = currentMouse;
     
+        firstLook = false;
+    }
+    glm::vec2 mouseDelta = oldMousePos_ - currentMouse;
+    ViewDirection_ = glm::rotate(ViewDirection_, glm::radians(mouseDelta.x), UpVector_);
+    oldMousePos_ = currentMouse;
 }
 // move forward and backward
 void Camera::MoveForward(float speed)
 {
     // simple but not correct
-    Eye_.z -= speed;
+    Eye_ +=  (ViewDirection_ * speed);
 
 }
 void Camera::MoveBackward(float speed)
 {
-    Eye_.z += speed;
+    Eye_ -= (ViewDirection_*speed);
 }
 void Camera::MoveLeft(float speed)
 {
-    Eye_.x -=speed;
+    // update x position based on the mouse
+    Eye_ -= (glm::cross(ViewDirection_, UpVector_) * speed);
 }
 void Camera::MoveRight(float speed)
 {
-    Eye_.x += speed;
+    Eye_ += (glm::cross(ViewDirection_, UpVector_) * speed);
 }
     

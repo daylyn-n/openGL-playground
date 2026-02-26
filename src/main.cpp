@@ -21,8 +21,8 @@
 #include "../include/Camera.hpp"
 //Globals
 
-int gScreenHeight = 480;
-int gScreenWidth = 640;
+int gScreenHeight = 1080;
+int gScreenWidth = 1920;
 
 SDL_Window* gGraphicsApplicationWindow = nullptr;
 SDL_GLContext gOpenGLContext = nullptr;
@@ -37,7 +37,7 @@ GLuint gIBO = 0;
 float g_u_offset = -2.0f;
 float g_u_Rotate = 0;
 float g_u_size = 1;
-float gSpeed = 0.001f;
+float gSpeed = 0.05f;
 Camera gCamera;
 // ----------------- ERROR HANDLING ROUTINES -----------------------
 static void GLClearAllError()
@@ -155,19 +155,48 @@ void VertexSpecification()
     // Lives on CPU
     const std::vector<GLfloat> vertexData
     {
-        //x     y       z
-        // 0 - Vertex
-        -0.5f, -0.5f, 0.0f,     // bot left vertex
-        1.0f, 0.0f, 0.0f,       // color
-        // 1 - Vertex
-        0.5f, -0.5f, 0.0f,      // bot right vertex
-        0.0f, 1.0f, 0.0f,       // color
-        // 2 - Vertex
-        -0.5f, 0.5f, 0.0f,       // top left vertex
-        0.0f, 0.0f, 1.0f,       // color
-        // 3 - Vertex
-        0.5f, 0.5f, 0.0f,      // top right vertex
-        1.0f, 0.0f, 0.0f,       // color
+     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f
+    
     };
 
 
@@ -197,13 +226,7 @@ void VertexSpecification()
             vertexData.data(), 
             GL_STATIC_DRAW);
 
-    const std::vector<GLuint> indices {2, 0, 1, 3, 2, 1};
-    // set up Index Buffer Object (IBO ie EBO)
-    glGenBuffers(1, &gIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
     
-    // populate the index buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     // basically just defining how much data we point to and which attributes we look at when we
     // jump from vertex to vertex
@@ -282,6 +305,8 @@ void InitializeProgram()
 }
 void Input()
 {
+    static int mouseX {gScreenWidth / 2};
+    static int mouseY {gScreenHeight / 2};
     SDL_Event e;
     while(SDL_PollEvent(&e) != 0)
     {
@@ -290,9 +315,12 @@ void Input()
             std::cout << "Cya" << std::endl;
             gQuit = true;
         }
-        else if(e.type == SDL_MOUSEMOTION)
+        if(e.type == SDL_MOUSEMOTION)
         {
-           gCamera.MouseLook(e.motion.xrel, e.motion.yrel); 
+            mouseX += e.motion.xrel;
+            mouseY += e.motion.yrel;
+            gCamera.MouseLook(mouseX, mouseY); 
+            std::cout << e.motion.xrel << std::endl;
         }
     }
 
@@ -326,7 +354,7 @@ void Input()
 
 void PreDraw()
 {
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glDisable(GL_CULL_FACE);
     
@@ -338,7 +366,7 @@ void PreDraw()
     // use the vertex and fragment shader that we defined earlier
     glUseProgram(gGraphicsPipelineShaderProgram);
     
-  //  g_u_Rotate -=0.1f;
+    g_u_Rotate -=0.1f;
     // translating our model obect from local space to wordspace
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, g_u_offset));
      model = glm::rotate(model, glm::radians(g_u_Rotate), glm::vec3(0.0f, 1.0f, 0.0f));
@@ -379,13 +407,14 @@ void Draw()
     // takes in the primitive render type
     // first index to render
     // number of indicies to render (ie number of vertices for triangles)
-    GLCheck(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);)
+    GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
 
 }
 
 
 void MainLoop()
 {
+    SDL_WarpMouseInWindow(gGraphicsApplicationWindow, gScreenWidth / 2, gScreenHeight / 2);
     while(!gQuit)
     {
         Input();
