@@ -16,6 +16,7 @@ void Camera::MouseLook(int mouseX, int mouseY)
     }
     glm::vec2 mouseDelta = oldMousePos_ - currentMouse;
     ViewDirection_ = glm::rotate(ViewDirection_, glm::radians(mouseDelta.x), UpVector_);
+    ViewDirection_ = glm::rotate(ViewDirection_, glm::radians(mouseDelta.y), glm::cross(ViewDirection_, UpVector_));
     oldMousePos_ = currentMouse;
 }
 // move forward and backward
