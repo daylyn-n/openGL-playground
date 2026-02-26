@@ -1,9 +1,16 @@
 #version 410 core
+layout(location=0) in vec3 position;
+layout(location=1) in vec3 vertexCols;
 
-in vec4 position;
+uniform mat4 u_ModelMatrix;
+uniform mat4 u_Projection;
+uniform mat4 u_ViewMatrix;
+out vec3 v_vertexCols;
 
 void main()
 {
-    gl_Position = vec4(position.x, position.y, position.z, position.w);
+    v_vertexCols = vertexCols;
+    vec4 newPosition = u_Projection * u_ViewMatrix * u_ModelMatrix * vec4(position, 1.0f);
+    gl_Position = vec4(newPosition.x, newPosition.y, newPosition.z, newPosition.w);
 }
 

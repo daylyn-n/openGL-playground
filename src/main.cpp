@@ -1,8 +1,24 @@
+// compilation: g++ -std=c++17 ./src/*.cpp ./src/glad.c -o prog -I ./include -I./thirdparty/glm-master/ -lSDL2 -ldl
+ 
+
 #include "../include/glad/glad.h"
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
 #include <fstream>
+
+// GLM HEADERS:
+#include <glm/vec3.hpp> // glm::vec3
+#include <glm/vec4.hpp> // glm::vec4
+#include <glm/mat4x4.hpp> // glm::mat4
+#include <glm/ext/matrix_transform.hpp> // glm::translate, glm::rotate, glm::scale
+#include <glm/ext/matrix_clip_space.hpp> // glm::perspective
+#include <glm/ext/scalar_constants.hpp> // glm::pi
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
+
+// our libraries
+#include "../include/Camera.hpp"
 //Globals
 
 int gScreenHeight = 480;
@@ -15,7 +31,38 @@ bool gQuit = false;
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
+// used to store the array of indicies used to draw our verts
+GLuint gIBO = 0;
 
+float g_u_offset = -2.0f;
+float g_u_Rotate = 0;
+float g_u_size = 1;
+float gSpeed = 0.001f;
+Camera gCamera;
+// ----------------- ERROR HANDLING ROUTINES -----------------------
+static void GLClearAllError()
+{
+    while(glGetError() != GL_NO_ERROR)
+    {
+        
+    }
+}
+
+// return true if error
+static bool GLCheckErrorStatus(const char* function, int line)
+{
+    while(GLenum error = glGetError())
+    {
+        std::cout << "OpenGL ERROR: " << std::to_string(error)  << "\tLine: "<< line<<
+            "\tfunction: " << function << std::endl;
+        return true;
+    }
+    return false;
+}
+// macro
+#define GLCheck(x) GLClearAllError(); x; GLCheckErrorStatus(#x, __LINE__);
+
+// -------------------------------------------------------------------
 
 
 std::string LoadShaderAsString(const std::string& filename)
@@ -106,13 +153,24 @@ void VertexSpecification()
 {
 
     // Lives on CPU
-    const std::vector<GLfloat> vertexPos
+    const std::vector<GLfloat> vertexData
     {
         //x     y       z
-        -0.8f, -0.8f, 0.0f,
-        0.8f, -0.8f, 0.0f,
-        0.0f, 0.8f, 0.0f,
+        // 0 - Vertex
+        -0.5f, -0.5f, 0.0f,     // bot left vertex
+        1.0f, 0.0f, 0.0f,       // color
+        // 1 - Vertex
+        0.5f, -0.5f, 0.0f,      // bot right vertex
+        0.0f, 1.0f, 0.0f,       // color
+        // 2 - Vertex
+        -0.5f, 0.5f, 0.0f,       // top left vertex
+        0.0f, 0.0f, 1.0f,       // color
+        // 3 - Vertex
+        0.5f, 0.5f, 0.0f,      // top right vertex
+        1.0f, 0.0f, 0.0f,       // color
     };
+
+
 
     // settings things up for the GPU
     // Creating vertex array objects to specify
@@ -125,7 +183,7 @@ void VertexSpecification()
     // buffer objects to store our
     // vertexPos and define how we
     // read the data in glBufferData
-    
+     
     glGenBuffers(1, &gVBO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
     // takes in a enum target, in this case array buffer (VAO)
@@ -135,9 +193,17 @@ void VertexSpecification()
     // and the usage
 // CONCLUSION WITH glBUUfferData: we end up with our CPU vertex data being stored on the GPU
     glBufferData(GL_ARRAY_BUFFER,
-            vertexPos.size() * sizeof(GLfloat),
-            vertexPos.data(), 
+            vertexData.size() * sizeof(GLfloat),
+            vertexData.data(), 
             GL_STATIC_DRAW);
+
+    const std::vector<GLuint> indices {2, 0, 1, 3, 2, 1};
+    // set up Index Buffer Object (IBO ie EBO)
+    glGenBuffers(1, &gIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
+    
+    // populate the index buffer
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size()*sizeof(GLuint), indices.data(), GL_STATIC_DRAW);
 
     // basically just defining how much data we point to and which attributes we look at when we
     // jump from vertex to vertex
@@ -146,10 +212,19 @@ void VertexSpecification()
                         3,
                         GL_FLOAT,
                         GL_FALSE,
-                        0,
-                        (void*)0
+                        sizeof(GLfloat) * 6,
+                        (GLvoid*)0
                         );
-
+    
+    // color information
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(GLfloat) * 6,
+                        (GLvoid*)(sizeof(GLfloat) * 3)
+                            );
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
 }
@@ -215,6 +290,37 @@ void Input()
             std::cout << "Cya" << std::endl;
             gQuit = true;
         }
+        else if(e.type == SDL_MOUSEMOTION)
+        {
+           gCamera.MouseLook(e.motion.xrel, e.motion.yrel); 
+        }
+    }
+
+    // key presses!
+    const Uint8 *state = SDL_GetKeyboardState(NULL);
+    if(state[SDL_SCANCODE_UP])
+    {
+        gCamera.MoveForward(gSpeed);
+    }
+    if(state[SDL_SCANCODE_DOWN])
+    {
+        gCamera.MoveBackward(gSpeed);
+    }
+    if(state[SDL_SCANCODE_RIGHT])
+    {
+        gCamera.MoveRight(gSpeed);
+    }
+    if(state[SDL_SCANCODE_LEFT])
+    {
+        gCamera.MoveLeft(gSpeed);
+    }
+    if(state[SDL_SCANCODE_S])
+    {
+        g_u_size += 0.01;
+    }
+    if(state[SDL_SCANCODE_D])
+    {
+        g_u_size -= 0.01;
     }
 }
 
@@ -228,16 +334,52 @@ void PreDraw()
     glClearColor(1.f, 1.f, 0.0f, 1.f);
 
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
+    
+    // use the vertex and fragment shader that we defined earlier
     glUseProgram(gGraphicsPipelineShaderProgram);
+    
+  //  g_u_Rotate -=0.1f;
+    // translating our model obect from local space to wordspace
+    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, g_u_offset));
+     model = glm::rotate(model, glm::radians(g_u_Rotate), glm::vec3(0.0f, 1.0f, 0.0f));
 
+    // rotate
+
+
+
+   
+    model           = glm::scale(model, glm::vec3(g_u_size, g_u_size, g_u_size));
+
+    // link the uniform variables to our shaders
+    GLint u_ModelMatrixLlocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ModelMatrix");
+    glUniformMatrix4fv(u_ModelMatrixLlocation , 1,
+                    GL_FALSE, &model[0][0]);
+
+    glm::mat4 view  = gCamera.GetViewMatrix();
+    GLint u_ViewLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ViewMatrix");
+    glUniformMatrix4fv(u_ViewLocation, 1,
+                    GL_FALSE, &view[0][0]);
+    // Projection matrix in per
+    glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
+                                                (float)gScreenWidth/(float)gScreenHeight, 
+                                                0.1f,
+                                                10.0f);
+
+    // link the uniform variables to our shaders
+    GLint u_ProjectionLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_Projection");
+    glUniformMatrix4fv(u_ProjectionLocation, 1,
+                    GL_FALSE, &perspective[0][0]);
 }
 
 void Draw()
 {
     glBindVertexArray(gVAO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    
+    // takes in the primitive render type
+    // first index to render
+    // number of indicies to render (ie number of vertices for triangles)
+    GLCheck(glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);)
 
 }
 

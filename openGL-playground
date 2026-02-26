@@ -1,0 +1,17 @@
+#include "../include/Camera.hpp"
+
+void Camera::MoveForward()
+{
+     
+}
+void Camera::MoveBackward()
+{
+
+}
+
+void Camera::MoveLeft()
+{
+}
+void Camera::MoveRight()
+{
+}
