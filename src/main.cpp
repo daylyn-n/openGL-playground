@@ -31,6 +31,7 @@ bool gQuit = false;
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
+GLuint gLightVAO = 0;
 // used to store the array of indicies used to draw our verts
 GLuint gIBO = 0;
 
@@ -155,48 +156,47 @@ void VertexSpecification()
     // Lives on CPU
     const std::vector<GLfloat> vertexData
     {
-     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+     -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f, 
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f, 
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
 
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f, 
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,  
+    -0.5f, -0.5f, -0.5f, 
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
 
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f, 
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
 
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f, 
+    -0.5f, -0.5f, -0.5f,
 
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f
-    
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f,
     };
 
 
@@ -226,7 +226,7 @@ void VertexSpecification()
             vertexData.data(), 
             GL_STATIC_DRAW);
 
-    
+   
 
     // basically just defining how much data we point to and which attributes we look at when we
     // jump from vertex to vertex
@@ -235,19 +235,18 @@ void VertexSpecification()
                         3,
                         GL_FLOAT,
                         GL_FALSE,
-                        sizeof(GLfloat) * 6,
+                        sizeof(GLfloat) * 3,
                         (GLvoid*)0
                         );
     
-    // color information
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        sizeof(GLfloat) * 6,
-                        (GLvoid*)(sizeof(GLfloat) * 3)
-                            );
+    
+    glGenVertexArrays(1, &gLightVAO);
+    glBindVertexArray(gLightVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER_BINDING, gVBO);
+   
+    glVertexAttribPointer(0, 3 , GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
+    
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
 }
@@ -361,6 +360,11 @@ void PreDraw()
     glBindVertexArray(gVAO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
    
+    // adding light
+    
+    glUniform3fv(glGetUniformLocation(gGraphicsPipelineShaderProgram,"u_objectColor" ))
+
+
     g_u_Rotate -=0.1f;
     for(size_t i {}; i < 10; i++)
     {
