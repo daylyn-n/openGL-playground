@@ -1,6 +1,6 @@
 // compilation: g++ -std=c++17 ./src/*.cpp ./src/glad.c -o prog -I ./include -I./thirdparty/glm-master/ -lSDL2 -ldl
  
-
+#include "../include/ShaderProgram.hpp"
 #include "../include/glad/glad.h"
 #include <SDL2/SDL.h>
 #include <iostream>
@@ -31,7 +31,6 @@ bool gQuit = false;
 
 GLuint gVAO = 0;
 GLuint gVBO = 0;
-GLuint gLightVAO = 0;
 // used to store the array of indicies used to draw our verts
 GLuint gIBO = 0;
 
@@ -66,76 +65,7 @@ static bool GLCheckErrorStatus(const char* function, int line)
 // -------------------------------------------------------------------
 
 
-std::string LoadShaderAsString(const std::string& filename)
-{
-    std::string res = "";
 
-    std::string line = "";
-    std::ifstream myFile(filename.c_str());
-
-    if(myFile.is_open())
-    {
-        while(std::getline(myFile, line))
-        {
-            res+=line + '\n';
-        }
-        myFile.close();
-    }
-    return res;
-}
-
-
-// program object for our shaders
-// has control of our vertex shader and fragment shader
-// to define how our vertices and triangles are used
-
-GLuint gGraphicsPipelineShaderProgram = 0;
-
-GLuint CompileShader(GLuint type, const std::string &sourceCode)
-{
-    GLuint shaderObject;
-     if(type == GL_VERTEX_SHADER)
-     {
-         shaderObject = glCreateShader(GL_VERTEX_SHADER);
-     }
-     else if(type == GL_FRAGMENT_SHADER)
-     {
-        shaderObject = glCreateShader(GL_FRAGMENT_SHADER);
-     }
-     const char* src = sourceCode.c_str();
-     glShaderSource(shaderObject, 1, &src, nullptr);
-     glCompileShader(shaderObject);
-   return shaderObject;
-}
-// takes in vertex and fragment shader source codes
-
-GLuint CreateShaderProgram(const std::string &vs, const std::string &fs)
-{
-    GLuint programObject = glCreateProgram();
-
-    GLuint myVertexShader = CompileShader(GL_VERTEX_SHADER, vs);
-    GLuint myFragmentShader = CompileShader(GL_FRAGMENT_SHADER, fs);
-
-    // linking our two shader programs(vertex and fragment) into one executable
-    // file, for our graphicsPipelne
-    glAttachShader(programObject, myVertexShader);
-    glAttachShader(programObject, myFragmentShader);
-    glLinkProgram(programObject);
-
-    // validate our progam
-    glValidateProgram(programObject);
-    //detach shader
-
-    return programObject;
-}
-void CreateGraphicsPipeline()
-{
-    std::string vertexShaderSrc     = LoadShaderAsString("shaders/vert.glsl");
-    std::string fragmentShaderSrc   = LoadShaderAsString("shaders/frag.glsl");
-
-
-    gGraphicsPipelineShaderProgram = CreateShaderProgram(vertexShaderSrc, fragmentShaderSrc);
-}
 void GetOpenGLVersionInfo()
 {
     std::cout << "Vendor:" << glGetString(GL_VENDOR)  << std::endl;
@@ -156,47 +86,48 @@ void VertexSpecification()
     // Lives on CPU
     const std::vector<GLfloat> vertexData
     {
-     -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f, 
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f, 
+     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
 
-    -0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
 
-    -0.5f,  0.5f,  0.5f, 
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,  
-    -0.5f, -0.5f, -0.5f, 
-    -0.5f, -0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
 
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f, 
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
 
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f, 
-    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
+     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
 
-    -0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f
+    
     };
 
 
@@ -235,18 +166,19 @@ void VertexSpecification()
                         3,
                         GL_FLOAT,
                         GL_FALSE,
-                        sizeof(GLfloat) * 3,
+                        sizeof(GLfloat) * 6,
                         (GLvoid*)0
                         );
     
-    
-    glGenVertexArrays(1, &gLightVAO);
-    glBindVertexArray(gLightVAO);
-
-    glBindBuffer(GL_ARRAY_BUFFER_BINDING, gVBO);
-   
-    glVertexAttribPointer(0, 3 , GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 3, (GLvoid*)0);
-    
+    // color information
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1,
+                        3,
+                        GL_FLOAT,
+                        GL_FALSE,
+                        sizeof(GLfloat) * 6,
+                        (GLvoid*)(sizeof(GLfloat) * 3)
+                            );
     glBindVertexArray(0);
     glDisableVertexAttribArray(0);
 }
@@ -360,11 +292,6 @@ void PreDraw()
     glBindVertexArray(gVAO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
    
-    // adding light
-    
-    glUniform3fv(glGetUniformLocation(gGraphicsPipelineShaderProgram,"u_objectColor" ))
-
-
     g_u_Rotate -=0.1f;
     for(size_t i {}; i < 10; i++)
     {
@@ -453,7 +380,7 @@ int main()
 
     // crrate the graphics pipelines
     // MINIMUM: setting vertex and fragment shaders
-    CreateGraphicsPipeline();
+    ShaderProgram cubeShad("shaders/vert.glsl", "shaders/frag.glsl");
 
     // drawing;
     MainLoop();
