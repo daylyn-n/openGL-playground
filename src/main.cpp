@@ -21,8 +21,8 @@
 #include "../include/Camera.hpp"
 //Globals
 
-int gScreenHeight = 1080;
-int gScreenWidth = 1920;
+int gScreenHeight =600;
+int gScreenWidth = 800;
 
 SDL_Window* gGraphicsApplicationWindow = nullptr;
 SDL_GLContext gOpenGLContext = nullptr;
@@ -226,7 +226,7 @@ void VertexSpecification()
             vertexData.data(), 
             GL_STATIC_DRAW);
 
-    
+   
 
     // basically just defining how much data we point to and which attributes we look at when we
     // jump from vertex to vertex
@@ -319,36 +319,28 @@ void Input()
         {
             mouseX += e.motion.xrel;
             mouseY += e.motion.yrel;
-            gCamera.MouseLook(mouseX, mouseY); 
+            gCamera.MouseLook(mouseX -1 , mouseY - 1); 
             std::cout << e.motion.xrel << std::endl;
         }
     }
 
     // key presses!
     const Uint8 *state = SDL_GetKeyboardState(NULL);
-    if(state[SDL_SCANCODE_UP])
+    if(state[SDL_SCANCODE_W])
     {
         gCamera.MoveForward(gSpeed);
     }
-    if(state[SDL_SCANCODE_DOWN])
+    if(state[SDL_SCANCODE_S])
     {
         gCamera.MoveBackward(gSpeed);
     }
-    if(state[SDL_SCANCODE_RIGHT])
+    if(state[SDL_SCANCODE_D])
     {
         gCamera.MoveRight(gSpeed);
     }
-    if(state[SDL_SCANCODE_LEFT])
+    if(state[SDL_SCANCODE_A])
     {
         gCamera.MoveLeft(gSpeed);
-    }
-    if(state[SDL_SCANCODE_S])
-    {
-        g_u_size += 0.01;
-    }
-    if(state[SDL_SCANCODE_D])
-    {
-        g_u_size -= 0.01;
     }
 }
 
@@ -366,50 +358,62 @@ void PreDraw()
     // use the vertex and fragment shader that we defined earlier
     glUseProgram(gGraphicsPipelineShaderProgram);
     
-    g_u_Rotate -=0.1f;
-    // translating our model obect from local space to wordspace
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, g_u_offset));
-     model = glm::rotate(model, glm::radians(g_u_Rotate), glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // rotate
-
-
-
-   
-    model           = glm::scale(model, glm::vec3(g_u_size, g_u_size, g_u_size));
-
-    // link the uniform variables to our shaders
-    GLint u_ModelMatrixLlocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ModelMatrix");
-    glUniformMatrix4fv(u_ModelMatrixLlocation , 1,
-                    GL_FALSE, &model[0][0]);
-
-    glm::mat4 view  = gCamera.GetViewMatrix();
-    GLint u_ViewLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ViewMatrix");
-    glUniformMatrix4fv(u_ViewLocation, 1,
-                    GL_FALSE, &view[0][0]);
-    // Projection matrix in per
-    glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
-                                                (float)gScreenWidth/(float)gScreenHeight, 
-                                                0.1f,
-                                                10.0f);
-
-    // link the uniform variables to our shaders
-    GLint u_ProjectionLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_Projection");
-    glUniformMatrix4fv(u_ProjectionLocation, 1,
-                    GL_FALSE, &perspective[0][0]);
-}
-
-void Draw()
-{
     glBindVertexArray(gVAO);
     glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-    
-    // takes in the primitive render type
-    // first index to render
-    // number of indicies to render (ie number of vertices for triangles)
-    GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+   
+    g_u_Rotate -=0.1f;
+    for(size_t i {}; i < 10; i++)
+    {
+        // translating our model obect from local space to wordspace
+
+        // get 10 cube position
+        glm::vec3 cubePositions[] = {
+            glm::vec3( 0.0f,  0.0f,  0.0f), 
+            glm::vec3( 2.0f,  5.0f, -15.0f), 
+            glm::vec3(-1.5f, -2.2f, -2.5f),  
+            glm::vec3(-3.8f, -2.0f, -12.3f),  
+            glm::vec3( 2.4f, -0.4f, -3.5f),  
+            glm::vec3(-1.7f,  3.0f, -7.5f),  
+            glm::vec3( 1.3f, -2.0f, -2.5f),  
+            glm::vec3( 1.5f,  2.0f, -2.5f), 
+            glm::vec3( 1.5f,  0.2f, -1.5f), 
+            glm::vec3(-1.3f,  1.0f, -1.5f)  
+        };
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+
+        model = glm::rotate(model, glm::radians(g_u_Rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
+
+        model           = glm::scale(model, glm::vec3(g_u_size, g_u_size, g_u_size));
+
+        // link the uniform variables to our shaders
+        GLint u_ModelMatrixLlocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ModelMatrix");
+        glUniformMatrix4fv(u_ModelMatrixLlocation , 1,
+                GL_FALSE, &model[0][0]);
+
+        glm::mat4 view  = gCamera.GetViewMatrix();
+        GLint u_ViewLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ViewMatrix");
+        glUniformMatrix4fv(u_ViewLocation, 1,
+                GL_FALSE, &view[0][0]);
+        // Projection matrix in per
+        glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
+                (float)gScreenWidth/(float)gScreenHeight, 
+                0.1f,
+                10.0f);
+
+        // link the uniform variables to our shaders
+        GLint u_ProjectionLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_Projection");
+        glUniformMatrix4fv(u_ProjectionLocation, 1,
+                GL_FALSE, &perspective[0][0]);
+   
+        // takes in the primitive render type
+        // first index to render
+        // number of indicies to render (ie number of vertices for triangles)
+        GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+
+    }
 
 }
+
 
 
 void MainLoop()
@@ -421,7 +425,7 @@ void MainLoop()
 
         PreDraw();
 
-        Draw();
+//        Draw();
         
         // update screen
         SDL_GL_SwapWindow(gGraphicsApplicationWindow);
