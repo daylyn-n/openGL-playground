@@ -1,11 +1,12 @@
 // compilation: g++ -std=c++17 ./src/*.cpp ./src/glad.c -o prog -I ./include -I./thirdparty/glm-master/ -lSDL2 -ldl
  
 #include "../include/ShaderProgram.hpp"
+#include "../include/VBO.hpp"
+#include "../include/VAO.hpp"
 #include "../include/glad/glad.h"
 #include <SDL2/SDL.h>
 #include <iostream>
 #include <vector>
-#include <fstream>
 
 // GLM HEADERS:
 #include <glm/vec3.hpp> // glm::vec3
@@ -34,10 +35,6 @@ GLuint gVBO = 0;
 // used to store the array of indicies used to draw our verts
 GLuint gIBO = 0;
 
-float g_u_offset = -2.0f;
-float g_u_Rotate = 0;
-float g_u_size = 1;
-float gSpeed = 0.05f;
 Camera gCamera;
 // ----------------- ERROR HANDLING ROUTINES -----------------------
 static void GLClearAllError()
@@ -80,7 +77,7 @@ void GetOpenGLVersionInfo()
 
 }
 
-void VertexSpecification()
+void VertexSpecification(VAO &vao, VBO &vbo)
 {
 
     // Lives on CPU
@@ -131,21 +128,7 @@ void VertexSpecification()
     };
 
 
-
-    // settings things up for the GPU
-    // Creating vertex array objects to specify
-    // how we read our vertexPos
-    // always define before VBO
-    glGenVertexArrays(1, &gVAO);
-    glBindVertexArray(gVAO);
-
-    // vertex buffer object
-    // buffer objects to store our
-    // vertexPos and define how we
-    // read the data in glBufferData
-     
-    glGenBuffers(1, &gVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+   
     // takes in a enum target, in this case array buffer (VAO)
     // takes in the size of our vertexPos, in this case its
     // the size of our vertex multiplied by the size of each element
@@ -259,23 +242,23 @@ void Input()
     const Uint8 *state = SDL_GetKeyboardState(NULL);
     if(state[SDL_SCANCODE_W])
     {
-        gCamera.MoveForward(gSpeed);
+        gCamera.MoveForward(gCamera.speed);
     }
     if(state[SDL_SCANCODE_S])
     {
-        gCamera.MoveBackward(gSpeed);
+        gCamera.MoveBackward(gCamera.speed);
     }
     if(state[SDL_SCANCODE_D])
     {
-        gCamera.MoveRight(gSpeed);
+        gCamera.MoveRight(gCamera.speed);
     }
     if(state[SDL_SCANCODE_A])
     {
-        gCamera.MoveLeft(gSpeed);
+        gCamera.MoveLeft(gCamera.speed);
     }
 }
 
-void PreDraw()
+void PreDraw(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
 {
     glEnable(GL_DEPTH_TEST);
 
@@ -287,12 +270,12 @@ void PreDraw()
     glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
     
     // use the vertex and fragment shader that we defined earlier
-    glUseProgram(gGraphicsPipelineShaderProgram);
+    glUseProgram(cubeShad.GraphicsPipelineShaderProgram);
     
-    glBindVertexArray(gVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, gVBO);
+    glBindVertexArray(vao.VAOID);
+    glBindBuffer(GL_ARRAY_BUFFER, vbo.VBOID);
    
-    g_u_Rotate -=0.1f;
+    gCamera.u_rotate -=0.1f;
     for(size_t i {}; i < 10; i++)
     {
         // translating our model obect from local space to wordspace
@@ -312,17 +295,17 @@ void PreDraw()
         };
         glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
 
-        model = glm::rotate(model, glm::radians(g_u_Rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
+        model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
 
-        model           = glm::scale(model, glm::vec3(g_u_size, g_u_size, g_u_size));
+        model           = glm::scale(model, glm::vec3(gCamera.u_size, gCamera.u_size, gCamera.u_size));
 
         // link the uniform variables to our shaders
-        GLint u_ModelMatrixLlocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ModelMatrix");
+        GLint u_ModelMatrixLlocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_ModelMatrix");
         glUniformMatrix4fv(u_ModelMatrixLlocation , 1,
                 GL_FALSE, &model[0][0]);
 
         glm::mat4 view  = gCamera.GetViewMatrix();
-        GLint u_ViewLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_ViewMatrix");
+        GLint u_ViewLocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_ViewMatrix");
         glUniformMatrix4fv(u_ViewLocation, 1,
                 GL_FALSE, &view[0][0]);
         // Projection matrix in per
@@ -332,7 +315,7 @@ void PreDraw()
                 10.0f);
 
         // link the uniform variables to our shaders
-        GLint u_ProjectionLocation = glGetUniformLocation(gGraphicsPipelineShaderProgram, "u_Projection");
+        GLint u_ProjectionLocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_Projection");
         glUniformMatrix4fv(u_ProjectionLocation, 1,
                 GL_FALSE, &perspective[0][0]);
    
@@ -347,14 +330,14 @@ void PreDraw()
 
 
 
-void MainLoop()
+void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
 {
     SDL_WarpMouseInWindow(gGraphicsApplicationWindow, gScreenWidth / 2, gScreenHeight / 2);
     while(!gQuit)
     {
         Input();
 
-        PreDraw();
+        PreDraw(cubeShad, vao, vbo);
 
 //        Draw();
         
@@ -374,16 +357,20 @@ int main()
    
     // set up graphics program
     InitializeProgram();
-    
+
+    VAO vao;
+    VBO vbo;
+
     // setup the geometry
-    VertexSpecification();
+    VertexSpecification(vao, vbo);
 
     // crrate the graphics pipelines
     // MINIMUM: setting vertex and fragment shaders
     ShaderProgram cubeShad("shaders/vert.glsl", "shaders/frag.glsl");
 
+
     // drawing;
-    MainLoop();
+    MainLoop(cubeShad, vao, vbo);
 
     CleanUp();
     return 0;

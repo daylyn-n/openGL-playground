@@ -18,6 +18,11 @@ class Camera
             ViewDirection_ = glm::vec3(0.0f, 0.0f,-1.0f);
             // assume we start on a perfect plane
             UpVector_ = glm::vec3(0.0f, 1.0f, 0.0f);
+
+            u_offset = -2.0f;
+            u_rotate = 0.0f;
+            u_size = 1.0f;
+            speed = 0.05f;  
         }
 
         // view matrix we produce and return
@@ -28,13 +33,16 @@ class Camera
         void MoveBackward(float speed);
         void MoveLeft(float speed);
         void MoveRight(float speed);
-    private:
+    
 
         glm::vec3 Eye_;
         glm::vec3 ViewDirection_;
         glm::vec3 UpVector_;
         glm::vec2 oldMousePos_;        
-        
+        float u_offset;
+        float u_rotate;
+        float u_size;
+        float speed;
 
 };
 
