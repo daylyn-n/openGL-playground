@@ -252,65 +252,62 @@ void MainLoop(ShaderProgram &cubeShad,ShaderProgram &lightShad, VAO &vao, VBO &v
         glDisable(GL_CULL_FACE);
 
         glViewport(0, 0, gScreenWidth, gScreenHeight);
-        glClearColor(1.f, 1.f, 0.0f, 1.f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.f);
 
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
         // use the vertex and fragment shader that we defined earlier
         cubeShad.use();
 
-           for(size_t i {}; i < 1; i++)
-        {
-            // translating our model obect from local space to wordspace
+        // translating our model obect from local space to wordspace
 
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 1.0f));
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 1.0f));
 
-           // model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
+        // model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
 
-            model           = glm::scale(model, glm::vec3(0.5f));
+        model           = glm::scale(model, glm::vec3(0.5f));
 
-            // link the uniform variables to our shaders
-            cubeShad.setMat4("u_ModelMatrix", model);
-            
-            glm::mat4 view  = gCamera.GetViewMatrix();
-            cubeShad.setMat4("u_ViewMatrix", view);
-            // Projection matrix in per
-            glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
-                    (float)gScreenWidth/(float)gScreenHeight, 
-                    0.1f,
-                    10.0f);
+        // link the uniform variables to our shaders
+        cubeShad.setMat4("u_ModelMatrix", model);
 
-            // link the uniform variables to our shaders
-            cubeShad.setMat4("u_Projection", perspective);
+        glm::mat4 view  = gCamera.GetViewMatrix();
+        cubeShad.setMat4("u_ViewMatrix", view);
+        // Projection matrix in per
+        glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
+                (float)gScreenWidth/(float)gScreenHeight, 
+                0.1f,
+                10.0f);
 
-            // takes in the primitive render type
-            // first index to render
-            // number of indicies to render (ie number of vertices for triangles)
-            vao.bind();
-            GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+        // link the uniform variables to our shaders
+        cubeShad.setMat4("u_Projection", perspective);
 
-            
-            lightShad.use();
-            lightShad.setVec3("u_objColor", 1.0f, 0.5f, 0.31f);
-            lightShad.setVec3("u_lightColor", 1.0f, 1.0f, 1.0f);
+        // takes in the primitive render type
+        // first index to render
+        // number of indicies to render (ie number of vertices for triangles)
+        vao.bind();
+        GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
 
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, glm::vec3(1.2f, 1.0f, 2.0f));
-            model = glm::scale(model, glm::vec3(1.0f));
-            lightShad.setMat4("u_ModelMatrix", model);
-            lightShad.setMat4("u_ViewMatrix", view);
-            lightShad.setMat4("u_Projection", perspective);
 
-            lightCubeVAO.bind();
-            GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
-            
+        lightShad.use();
+        lightShad.setVec3("u_objColor", 1.0f, 0.5f, 0.31f);
+        lightShad.setVec3("u_lightColor", 0.8f, 1.0f, 1.0f);
 
-            
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(1.2f, 1.0f, 2.0f));
+        model = glm::scale(model, glm::vec3(1.0f));
+        lightShad.setMat4("u_ModelMatrix", model);
+        lightShad.setMat4("u_ViewMatrix", view);
+        lightShad.setMat4("u_Projection", perspective);
 
-        }
+        lightCubeVAO.bind();
+        GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
 
-        // update screen
-        SDL_GL_SwapWindow(gGraphicsApplicationWindow);
+
+
+
+
+            // update screen
+            SDL_GL_SwapWindow(gGraphicsApplicationWindow);
     }
 }
 
