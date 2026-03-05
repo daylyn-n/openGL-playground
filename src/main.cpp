@@ -22,18 +22,14 @@
 #include "../include/Camera.hpp"
 //Globals
 
-int gScreenHeight =600;
-int gScreenWidth = 800;
+constexpr int gScreenHeight =600;
+constexpr int gScreenWidth = 800;
 
 SDL_Window* gGraphicsApplicationWindow = nullptr;
 SDL_GLContext gOpenGLContext = nullptr;
  
 bool gQuit = false;
 
-GLuint gVAO = 0;
-GLuint gVBO = 0;
-// used to store the array of indicies used to draw our verts
-GLuint gIBO = 0;
 
 Camera gCamera;
 // ----------------- ERROR HANDLING ROUTINES -----------------------
@@ -258,78 +254,6 @@ void Input()
     }
 }
 
-void PreDraw(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
-{
-    glEnable(GL_DEPTH_TEST);
-
-    glDisable(GL_CULL_FACE);
-    
-    glViewport(0, 0, gScreenWidth, gScreenHeight);
-    glClearColor(1.f, 1.f, 0.0f, 1.f);
-
-    glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-    
-    // use the vertex and fragment shader that we defined earlier
-    glUseProgram(cubeShad.GraphicsPipelineShaderProgram);
-    
-    glBindVertexArray(vao.VAOID);
-    glBindBuffer(GL_ARRAY_BUFFER, vbo.VBOID);
-   
-    gCamera.u_rotate -=0.1f;
-    for(size_t i {}; i < 10; i++)
-    {
-        // translating our model obect from local space to wordspace
-
-        // get 10 cube position
-        glm::vec3 cubePositions[] = {
-            glm::vec3( 0.0f,  0.0f,  0.0f), 
-            glm::vec3( 2.0f,  5.0f, -15.0f), 
-            glm::vec3(-1.5f, -2.2f, -2.5f),  
-            glm::vec3(-3.8f, -2.0f, -12.3f),  
-            glm::vec3( 2.4f, -0.4f, -3.5f),  
-            glm::vec3(-1.7f,  3.0f, -7.5f),  
-            glm::vec3( 1.3f, -2.0f, -2.5f),  
-            glm::vec3( 1.5f,  2.0f, -2.5f), 
-            glm::vec3( 1.5f,  0.2f, -1.5f), 
-            glm::vec3(-1.3f,  1.0f, -1.5f)  
-        };
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
-
-        model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
-
-        model           = glm::scale(model, glm::vec3(gCamera.u_size, gCamera.u_size, gCamera.u_size));
-
-        // link the uniform variables to our shaders
-        GLint u_ModelMatrixLlocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_ModelMatrix");
-        glUniformMatrix4fv(u_ModelMatrixLlocation , 1,
-                GL_FALSE, &model[0][0]);
-
-        glm::mat4 view  = gCamera.GetViewMatrix();
-        GLint u_ViewLocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_ViewMatrix");
-        glUniformMatrix4fv(u_ViewLocation, 1,
-                GL_FALSE, &view[0][0]);
-        // Projection matrix in per
-        glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
-                (float)gScreenWidth/(float)gScreenHeight, 
-                0.1f,
-                10.0f);
-
-        // link the uniform variables to our shaders
-        GLint u_ProjectionLocation = glGetUniformLocation(cubeShad.GraphicsPipelineShaderProgram, "u_Projection");
-        glUniformMatrix4fv(u_ProjectionLocation, 1,
-                GL_FALSE, &perspective[0][0]);
-   
-        // takes in the primitive render type
-        // first index to render
-        // number of indicies to render (ie number of vertices for triangles)
-        GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
-
-    }
-
-}
-
-
-
 void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
 {
     SDL_WarpMouseInWindow(gGraphicsApplicationWindow, gScreenWidth / 2, gScreenHeight / 2);
@@ -337,10 +261,67 @@ void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
     {
         Input();
 
-        PreDraw(cubeShad, vao, vbo);
 
-//        Draw();
-        
+        glEnable(GL_DEPTH_TEST);
+
+        glDisable(GL_CULL_FACE);
+
+        glViewport(0, 0, gScreenWidth, gScreenHeight);
+        glClearColor(1.f, 1.f, 0.0f, 1.f);
+
+        glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
+
+        // use the vertex and fragment shader that we defined earlier
+        cubeShad.use();
+
+        glBindVertexArray(vao.VAOID);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo.VBOID);
+
+        gCamera.u_rotate -=0.1f;
+        for(size_t i {}; i < 10; i++)
+        {
+            // translating our model obect from local space to wordspace
+
+            // get 10 cube position
+            glm::vec3 cubePositions[] = {
+                glm::vec3( 0.0f,  0.0f,  0.0f), 
+                glm::vec3( 2.0f,  5.0f, -15.0f), 
+                glm::vec3(-1.5f, -2.2f, -2.5f),  
+                glm::vec3(-3.8f, -2.0f, -12.3f),  
+                glm::vec3( 2.4f, -0.4f, -3.5f),  
+                glm::vec3(-1.7f,  3.0f, -7.5f),  
+                glm::vec3( 1.3f, -2.0f, -2.5f),  
+                glm::vec3( 1.5f,  2.0f, -2.5f), 
+                glm::vec3( 1.5f,  0.2f, -1.5f), 
+                glm::vec3(-1.3f,  1.0f, -1.5f)  
+            };
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+
+            model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
+
+            model           = glm::scale(model, glm::vec3(gCamera.u_size, gCamera.u_size, gCamera.u_size));
+
+            // link the uniform variables to our shaders
+            cubeShad.setMat4("u_ModelMatrix", model);
+            
+            glm::mat4 view  = gCamera.GetViewMatrix();
+            cubeShad.setMat4("u_ViewMatrix", view);
+            // Projection matrix in per
+            glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
+                    (float)gScreenWidth/(float)gScreenHeight, 
+                    0.1f,
+                    10.0f);
+
+            // link the uniform variables to our shaders
+            cubeShad.setMat4("u_Projection", perspective);
+
+            // takes in the primitive render type
+            // first index to render
+            // number of indicies to render (ie number of vertices for triangles)
+            GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+
+        }
+
         // update screen
         SDL_GL_SwapWindow(gGraphicsApplicationWindow);
     }
