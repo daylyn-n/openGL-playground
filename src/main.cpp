@@ -73,93 +73,78 @@ void GetOpenGLVersionInfo()
 
 }
 
-void VertexSpecification(VAO &vao, VBO &vbo)
+// Cube vertex data (36 vertices for 6 faces)
+const std::vector<GLfloat> gCubeVertices = {
+    // Back face
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    // Front face
+    -0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    // Left face
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f, -0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    // Right face
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    // Bottom face
+    -0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f, -0.5f,
+     0.5f, -0.5f,  0.5f,
+     0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f,  0.5f,
+    -0.5f, -0.5f, -0.5f,
+    // Top face
+    -0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f, -0.5f,
+     0.5f,  0.5f,  0.5f,
+     0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f,  0.5f,
+    -0.5f,  0.5f, -0.5f
+};
+
+//helper to setup a VAO with position attribute from a shared VBO
+void SetupCubeVAO(VAO& vao, VBO& vbo)
 {
+    vao.create();
+    vao.bind();
+    vbo.bind();
+    //position attribute: location 0, 3 floats, stride = 3 floats, offset = 0
+    vao.setVertexAttrib(0, 3, sizeof(GLfloat) * 3, 0);
+}
 
-    // Lives on CPU
-    const std::vector<GLfloat> vertexData
-    {
-     -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 0.0f, 0.0f,
+void VertexSpecification(VAO& cubeVAO, VBO& cubeVBO, VAO& lightCubeVAO)
+{
+    //create and upload shared VBO with cube vertex data
+    cubeVBO.create();
+    cubeVBO.bind();
+    cubeVBO.setData(gCubeVertices);
 
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 0.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 1.0f, 1.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
+    //setup VAO for main cube
+    SetupCubeVAO(cubeVAO, cubeVBO);
 
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-    -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
+    //setup VAO for light cube (shares the same VBO)
+    SetupCubeVAO(lightCubeVAO, cubeVBO);
 
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-     0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 1.0f,
-     0.5f, -0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-     0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-    -0.5f, -0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 0.0f,
-     0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 0.0f,
-     0.5f,  0.5f,  0.5f,  1.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f,  0.5f,  0.0f, 0.0f, 1.0f,
-    -0.5f,  0.5f, -0.5f,  0.0f, 1.0f, 1.0f
-    
-    };
-
-
-   
-    // takes in a enum target, in this case array buffer (VAO)
-    // takes in the size of our vertexPos, in this case its
-    // the size of our vertex multiplied by the size of each element
-    // takes in the data
-    // and the usage
-// CONCLUSION WITH glBUUfferData: we end up with our CPU vertex data being stored on the GPU
-    glBufferData(GL_ARRAY_BUFFER,
-            vertexData.size() * sizeof(GLfloat),
-            vertexData.data(), 
-            GL_STATIC_DRAW);
-
-   
-
-    // basically just defining how much data we point to and which attributes we look at when we
-    // jump from vertex to vertex
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        sizeof(GLfloat) * 6,
-                        (GLvoid*)0
-                        );
-    
-    // color information
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1,
-                        3,
-                        GL_FLOAT,
-                        GL_FALSE,
-                        sizeof(GLfloat) * 6,
-                        (GLvoid*)(sizeof(GLfloat) * 3)
-                            );
-    glBindVertexArray(0);
-    glDisableVertexAttribArray(0);
+    //unbind to prevent accidental modification
+    VAO::unbind();
+    VBO::unbind();
 }
 
 
@@ -254,7 +239,7 @@ void Input()
     }
 }
 
-void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
+void MainLoop(ShaderProgram &cubeShad,ShaderProgram &lightShad, VAO &vao, VBO &vbo, VAO &lightCubeVAO)
 {
     SDL_WarpMouseInWindow(gGraphicsApplicationWindow, gScreenWidth / 2, gScreenHeight / 2);
     while(!gQuit)
@@ -274,32 +259,15 @@ void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
         // use the vertex and fragment shader that we defined earlier
         cubeShad.use();
 
-        glBindVertexArray(vao.VAOID);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo.VBOID);
-
-        gCamera.u_rotate -=0.1f;
-        for(size_t i {}; i < 10; i++)
+           for(size_t i {}; i < 1; i++)
         {
             // translating our model obect from local space to wordspace
 
-            // get 10 cube position
-            glm::vec3 cubePositions[] = {
-                glm::vec3( 0.0f,  0.0f,  0.0f), 
-                glm::vec3( 2.0f,  5.0f, -15.0f), 
-                glm::vec3(-1.5f, -2.2f, -2.5f),  
-                glm::vec3(-3.8f, -2.0f, -12.3f),  
-                glm::vec3( 2.4f, -0.4f, -3.5f),  
-                glm::vec3(-1.7f,  3.0f, -7.5f),  
-                glm::vec3( 1.3f, -2.0f, -2.5f),  
-                glm::vec3( 1.5f,  2.0f, -2.5f), 
-                glm::vec3( 1.5f,  0.2f, -1.5f), 
-                glm::vec3(-1.3f,  1.0f, -1.5f)  
-            };
-            glm::mat4 model = glm::translate(glm::mat4(1.0f), cubePositions[i]);
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 1.0f));
 
-            model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
+           // model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
 
-            model           = glm::scale(model, glm::vec3(gCamera.u_size, gCamera.u_size, gCamera.u_size));
+            model           = glm::scale(model, glm::vec3(0.5f));
 
             // link the uniform variables to our shaders
             cubeShad.setMat4("u_ModelMatrix", model);
@@ -318,7 +286,26 @@ void MainLoop(ShaderProgram &cubeShad, VAO &vao, VBO &vbo)
             // takes in the primitive render type
             // first index to render
             // number of indicies to render (ie number of vertices for triangles)
+            vao.bind();
             GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+
+            
+            lightShad.use();
+            lightShad.setVec3("u_objColor", 1.0f, 0.5f, 0.31f);
+            lightShad.setVec3("u_lightColor", 1.0f, 1.0f, 1.0f);
+
+            model = glm::mat4(1.0f);
+            model = glm::translate(model, glm::vec3(1.2f, 1.0f, 2.0f));
+            model = glm::scale(model, glm::vec3(1.0f));
+            lightShad.setMat4("u_ModelMatrix", model);
+            lightShad.setMat4("u_ViewMatrix", view);
+            lightShad.setMat4("u_Projection", perspective);
+
+            lightCubeVAO.bind();
+            GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
+            
+
+            
 
         }
 
@@ -341,17 +328,21 @@ int main()
 
     VAO vao;
     VBO vbo;
+    VAO lightCubeVAO;
 
     // setup the geometry
-    VertexSpecification(vao, vbo);
+    VertexSpecification(vao, vbo, lightCubeVAO);
 
     // crrate the graphics pipelines
     // MINIMUM: setting vertex and fragment shaders
-    ShaderProgram cubeShad("shaders/vert.glsl", "shaders/frag.glsl");
+    ShaderProgram lightShad("shaders/cube_vert.glsl", "shaders/colors_frag.glsl"); 
+    ShaderProgram cubeShad("shaders/cube_vert.glsl", "shaders/cube_frag.glsl");
+    
+    // shaderPrograms for my lightcube and light
 
 
     // drawing;
-    MainLoop(cubeShad, vao, vbo);
+    MainLoop(cubeShad,lightShad, vao, vbo, lightCubeVAO);
 
     CleanUp();
     return 0;
