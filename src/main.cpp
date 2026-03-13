@@ -30,7 +30,7 @@ SDL_GLContext gOpenGLContext = nullptr;
  
 bool gQuit = false;
 
-
+glm::vec3 gLightPos = {1.2f, 1.0f, 2.0f};
 Camera gCamera;
 // ----------------- ERROR HANDLING ROUTINES -----------------------
 static void GLClearAllError()
@@ -75,48 +75,47 @@ void GetOpenGLVersionInfo()
 
 // Cube vertex data (36 vertices for 6 faces)
 const std::vector<GLfloat> gCubeVertices = {
-    // Back face
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    // Front face
-    -0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
-    // Left face
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f, -0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    // Right face
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    // Bottom face
-    -0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f, -0.5f,
-     0.5f, -0.5f,  0.5f,
-     0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f,  0.5f,
-    -0.5f, -0.5f, -0.5f,
-    // Top face
-    -0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f, -0.5f,
-     0.5f,  0.5f,  0.5f,
-     0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f,  0.5f,
-    -0.5f,  0.5f, -0.5f
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+     0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+     0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+    -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, 
+
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
+
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+     0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+    -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+     0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+    -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 };
 
 //helper to setup a VAO with position attribute from a shared VBO
@@ -126,7 +125,7 @@ void SetupCubeVAO(VAO& vao, VBO& vbo)
     vao.bind();
     vbo.bind();
     //position attribute: location 0, 3 floats, stride = 3 floats, offset = 0
-    vao.setVertexAttrib(0, 3, sizeof(GLfloat) * 3, 0);
+    vao.setVertexAttrib(0, 3, sizeof(GLfloat) * 6, 0);
 }
 
 void VertexSpecification(VAO& cubeVAO, VBO& cubeVBO, VAO& lightCubeVAO)
@@ -138,6 +137,7 @@ void VertexSpecification(VAO& cubeVAO, VBO& cubeVBO, VAO& lightCubeVAO)
 
     //setup VAO for main cube
     SetupCubeVAO(cubeVAO, cubeVBO);
+    cubeVAO.setVertexAttrib(1, 3, sizeof(GLfloat) * 6, 3*sizeof(float));
 
     //setup VAO for light cube (shares the same VBO)
     SetupCubeVAO(lightCubeVAO, cubeVBO);
@@ -237,6 +237,14 @@ void Input()
     {
         gCamera.MoveLeft(gCamera.speed);
     }
+    if(state[SDL_SCANCODE_SPACE])
+    {
+        gCamera.MoveUp(gCamera.speed - 0.02f);
+    }
+    if(state[SDL_SCANCODE_C])
+    {
+        gCamera.MoveDown(gCamera.speed - 0.02f);
+    }
 }
 
 void MainLoop(ShaderProgram &cubeShad,ShaderProgram &lightShad, VAO &vao, VBO &vbo, VAO &lightCubeVAO)
@@ -256,48 +264,42 @@ void MainLoop(ShaderProgram &cubeShad,ShaderProgram &lightShad, VAO &vao, VBO &v
 
         glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
-        // use the vertex and fragment shader that we defined earlier
-        cubeShad.use();
+        // use the lighting shader for the main cube (the lit object)
+        lightShad.use();
 
-        // translating our model obect from local space to wordspace
+        // translating our model object from local space to world space
+        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(1.0f));
 
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(1.2f, 1.0f, 1.0f));
-
-        // model = glm::rotate(model, glm::radians(gCamera.u_rotate * (i + 1)), glm::vec3(0.0f, 1.0f, 1.0f));
-
-        model           = glm::scale(model, glm::vec3(0.5f));
-
-        // link the uniform variables to our shaders
-        cubeShad.setMat4("u_ModelMatrix", model);
-
-        glm::mat4 view  = gCamera.GetViewMatrix();
-        cubeShad.setMat4("u_ViewMatrix", view);
-        // Projection matrix in per
+        glm::mat4 view = gCamera.GetViewMatrix();
+        // Projection matrix
         glm::mat4 perspective = glm::perspective(glm::radians(45.0f), 
                 (float)gScreenWidth/(float)gScreenHeight, 
                 0.1f,
                 10.0f);
 
-        // link the uniform variables to our shaders
-        cubeShad.setMat4("u_Projection", perspective);
+        // set uniforms for lighting shader
+        lightShad.setMat4("u_ModelMatrix", model);
+        lightShad.setMat4("u_ViewMatrix", view);
+        lightShad.setMat4("u_Projection", perspective);
+        lightShad.setVec3("u_objColor", 1.0f, 0.5f, 0.31f);
+        lightShad.setVec3("u_lightColor", 1.0f, 1.0f, 1.0f);
+        lightShad.setVec3("u_lightPos", gLightPos);
 
-        // takes in the primitive render type
-        // first index to render
-        // number of indicies to render (ie number of vertices for triangles)
+        // draw the lit cube
         vao.bind();
         GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
 
 
-        lightShad.use();
-        lightShad.setVec3("u_objColor", 1.0f, 0.5f, 0.31f);
-        lightShad.setVec3("u_lightColor", 0.8f, 1.0f, 1.0f);
-
+        // use the simple cube shader for the light source (just white)
+        cubeShad.use();
+        
         model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(1.2f, 1.0f, 2.0f));
-        model = glm::scale(model, glm::vec3(1.0f));
-        lightShad.setMat4("u_ModelMatrix", model);
-        lightShad.setMat4("u_ViewMatrix", view);
-        lightShad.setMat4("u_Projection", perspective);
+        model = glm::translate(model, gLightPos);
+        model = glm::scale(model, glm::vec3(0.2f));
+        cubeShad.setMat4("u_ModelMatrix", model);
+        cubeShad.setMat4("u_ViewMatrix", view);
+        cubeShad.setMat4("u_Projection", perspective);
 
         lightCubeVAO.bind();
         GLCheck(glDrawArrays(GL_TRIANGLES, 0, 36);)
@@ -332,7 +334,10 @@ int main()
 
     // crrate the graphics pipelines
     // MINIMUM: setting vertex and fragment shaders
-    ShaderProgram lightShad("shaders/cube_vert.glsl", "shaders/colors_frag.glsl"); 
+    //
+    // lightShad is the cube that is getting effected by the light
+    // cubeShad is the lighSource
+    ShaderProgram lightShad("shaders/lighting_vert.glsl", "shaders/lighting_frag.glsl"); 
     ShaderProgram cubeShad("shaders/cube_vert.glsl", "shaders/cube_frag.glsl");
     
     // shaderPrograms for my lightcube and light
