@@ -39,4 +39,12 @@ void Camera::MoveRight(float speed)
 {
     Eye_ += (glm::cross(ViewDirection_, UpVector_) * speed);
 }
-    
+   
+void Camera::MoveUp(float speed)
+{
+   Eye_ += (UpVector_ * speed); 
+}
+void Camera::MoveDown(float speed)
+{
+    Eye_ -= (UpVector_ * speed);
+}
